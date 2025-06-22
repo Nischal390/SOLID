@@ -1,41 +1,111 @@
 from abc import ABC, abstractmethod
-from enum import Enum
+class Pizza(ABC):
+    @abstractmethod
+    def get_cost(self):
+        pass
 
-class BaseSelector(Enum):
-    wheat = 'WH'
-    cauliflower = "CF"
-    wheat_GF = "GF"
+    @abstractmethod
+    def get_description(self):
+        pass
+
+class Margherita(Pizza):
+    def get_cost(self):
+        return 6.0
+
+    def get_description(self):
+        return "Margherita"
+
+class Farmhouse(Pizza):
+    def get_cost(self):
+        return 8.0
+
+    def get_description(self):
+        return "Farmhouse"
+
+class Cheese(Pizza):
+    def get_cost(self):
+        return 5.0
+
+    def get_description(self):
+        return "Cheese"
+
+class ToppingDecorator(Pizza):
+    def __init__(self, pizza):
+        self._pizza = pizza
+
+class CheeseTopping(ToppingDecorator):
+    def get_cost(self):
+        return self._pizza.get_cost()+0.5
+
+    def get_description(self):
+        return self._pizza.get_description()+" + cheese"
 
 
-class Pizza:
-    def __init__(self, base, user):
-        self.base = base
-        self.topping_price = {'olives':0.5, 'mushroom':0.4, 'chicken':0.6}
-        self.base_cost = {'wheat':1,'cauliflower':1.5,'wheat_GF':2}
-        self.pizza_cost = self.base_cost[base]
+class Olives(ToppingDecorator):
+    def get_cost(self):
+        return self._pizza.get_cost() + 0.6
+
+    def get_description(self):
+        return self._pizza.get_description() + " + olives"
+
+class Mushrooms(ToppingDecorator):
+    def get_cost(self):
+        return self._pizza.get_cost() + 0.4
+
+    def get_description(self):
+        return self._pizza.get_description() + " + mushrooms"
+
+class PaymentStrategy(ABC):
+    @abstractmethod
+    def pay(self):
+        pass
+
+class CreditCardPayment(PaymentStrategy):
+    def pay(self):
+        # payment logic
+        print("Payment has been made using Credit Card")
 
 
-    def add_toppings(self, topping):
-        self.pizza_cost+=self.topping_price[topping]
+class DebitCardPayment(PaymentStrategy):
+    def pay(self):
+        # payment logic
+        print("Payment has been made using Credit Card")
 
 
-class thincrustPizza(Pizza):
-    def choose_type(pizza_type):
-        
+class PayPalPayment(PaymentStrategy):
+    def pay(self):
+        # payment logic
+        print("Payment has been made using Credit Card")
 
+class Order:
+    def __init__(self, pizza):
+        self.pizza = pizza
+        self.payment_strategy = None
 
+    def payment_selection(self, pay_strategy):
+        self.payment_strategy = pay_strategy
 
-    
+    def checkout(self):
+        if not self.payment_strategy:
+            print("Invalid payment method. Please pay by cash")
+            amount = self.pizza.get_cost()
+            print(f"Order summary: {amount} USD")
 
-class User:
-    def __init__(self, name):
-        self.name = name
-        self.pizzas = []
-    
-    def add_pizza(self,pizza):
-        self.pizzas.append(pizza)
+        else:
+            amount = self.pizza.get_cost()
+            print(f"Order summary: {amount} USD")
+            self.payment_strategy.pay()
 
+if __name__ == "__main__":
+    pizza = Cheese()
+    pizza = Olives(pizza)
+    pizza = Mushrooms(pizza)
 
-class Payment:
-    pass
+    print(pizza.get_cost())
+    print(pizza.get_description())
 
+    order = Order(pizza)
+    pay_strategy = CreditCardPayment()
+    # pay_strategy = None
+    order.payment_selection(pay_strategy)
+    order.checkout()
